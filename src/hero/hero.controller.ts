@@ -1,7 +1,6 @@
 import { Controller, Post, Get, Param, Body } from '@nestjs/common';
 import { HeroService } from './hero.service';
 import { Hero } from './hero.entity';
-import { ItemMagico } from '../item/Item.entity';
 
 @Controller('heroes')
 export class HeroController {
