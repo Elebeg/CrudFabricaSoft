@@ -12,13 +12,16 @@ import { ItemModule } from './item/Item.module';
       type: 'postgres',
       host: 'localhost',
       port: 5432,
-      username: 'root',
-      password: '1234',
-      database: 'rpg',
+      username: 'postgres',
+      password: 'postgres',
+      database: 'rpgdb',
       entities: [Hero, ItemMagico],
       synchronize: true,
     }),
+    TypeOrmModule.forFeature([Hero, ItemMagico]),
+    HeroModule,
+    ItemModule,
   ],
-  providers:[HeroModule, ItemModule],
 })
 export class AppModule {}
+

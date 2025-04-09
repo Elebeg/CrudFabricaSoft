@@ -1,72 +1,73 @@
+// hero.service.ts
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { Hero } from './hero.entity';
 import { ItemMagico } from '../item/Item.entity';
 
 @Injectable()
 export class HeroService {
-    private readonly heros: Hero[] = [];
-    private readonly itens: ItemMagico[] = [];
+  constructor(
+    @InjectRepository(Hero)
+    private readonly heroRepository: Repository<Hero>,
+    @InjectRepository(ItemMagico)
+    private readonly itemRepository: Repository<ItemMagico>,
+  ) {}
 
-    createHero(hero: Hero) {
-        if (hero.force + hero.defense > 10) {
-            throw new Error("A soma de força e defesa não pode ser maior que 10.");
-        }
-        this.heros.push(hero);
+  async createHero(hero: Hero) {
+    if (hero.force + hero.defense > 10) {
+      throw new Error('A soma de força e defesa não pode ser maior que 10.');
+    }
+    return await this.heroRepository.save(hero);
+  }
+
+  async findAllHeros(): Promise<Hero[]> {
+    return this.heroRepository.find({ relations: ['itens'] });
+  }
+
+  async findHeroById(id: number): Promise<Hero> {
+    const hero = await this.heroRepository.findOne({ where: { id }, relations: ['itens'] });
+    if (!hero) throw new Error(`Personagem com o id ${id} não encontrado.`);
+    return hero;
+  }
+
+  async updateHeroName(id: number, newName: string) {
+    const hero = await this.findHeroById(id);
+    hero.name = newName;
+    return this.heroRepository.save(hero);
+  }
+
+  async removeHero(id: number) {
+    const hero = await this.findHeroById(id);
+    return this.heroRepository.remove(hero);
+  }
+
+  async addItemToHero(heroId: number, itemId: number) {
+    const hero = await this.findHeroById(heroId);
+    const item = await this.itemRepository.findOne({ where: { id: itemId } });
+    if (!item) throw new Error('Item não encontrado.');
+
+    if (item.type === 'Amuleto' && hero.itens.some(i => i.type === 'Amuleto')) {
+      throw new Error('O personagem já possui um amuleto.');
     }
 
-    createItemMagico(item: ItemMagico) {
-        item.validate(); 
-        this.itens.push(item);
-    }
+    hero.itens.push(item);
+    return this.heroRepository.save(hero);
+  }
 
-    findAllHeros(): Hero[] {
-        return this.heros;
-    }
+  async removeItemFromHero(heroId: number, itemId: number) {
+    const hero = await this.findHeroById(heroId);
+    hero.itens = hero.itens.filter(item => item.id !== itemId);
+    return this.heroRepository.save(hero);
+  }
 
-    findHeroById(id: number): Hero {
-        return this.heros.find(hero => hero.id === id);
-    }
+  async listItemsForHero(heroId: number): Promise<ItemMagico[]> {
+    const hero = await this.findHeroById(heroId);
+    return hero.itens;
+  }
 
-    updateHeroName(id: number, newName: string) {
-        const hero = this.findHeroById(id);
-        if (hero) {
-            hero.name = newName;
-        }
-    }
-
-    removeHero(id: number) {
-        this.heros = this.heros.filter(hero => hero.id !== id);
-    }
-
-    addItemToHero(heroId: number, itemId: number) {
-        const hero = this.findHeroById(heroId);
-        const item = this.itens.find(i => i.id === itemId);
-
-        if (!hero || !item) {
-            throw new Error("Personagem ou item não encontrado.");
-        }
-
-        if (item.type === 'Amuleto' && hero.itens.some(i => i.type === 'Amuleto')) {
-            throw new Error("O personagem já possui um amuleto.");
-        }
-
-        hero.itens.push(item);
-    }
-
-    removeItemFromHero(heroId: number, itemId: number) {
-        const hero = this.findHeroById(heroId);
-        if (hero) {
-            hero.itens = hero.itens.filter(item => item.id !== itemId);
-        }
-    }
-
-    listItemsForHero(heroId: number): ItemMagico[] {
-        const hero = this.findHeroById(heroId);
-        return hero ? hero.itens : [];
-    }
-
-    findAmuletByHero(heroId: number): ItemMagico | undefined {
-        const hero = this.findHeroById(heroId);
-        return hero ? hero.itens.find(item => item.type === 'Amuleto') : undefined;
-    }
+  async findAmuletByHero(heroId: number): Promise<ItemMagico | undefined> {
+    const hero = await this.findHeroById(heroId);
+    return hero.itens.find(item => item.type === 'Amuleto');
+  }
 }

@@ -1,14 +1,13 @@
-import { Inject, Module, forwardRef } from "@nestjs/common";
-import { ItemModule } from "src/item/Item.module";
-import { HeroController } from "./hero.controller";
-import { HeroService } from "./hero.service";
-
+import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Hero } from './hero.entity';
+import { HeroService } from './hero.service';
+import { HeroController } from './hero.controller';
+import { ItemMagico } from '../item/Item.entity';
 
 @Module({
-
-    imports: [forwardRef(() => ItemModule)],
-    controllers: [HeroController],
-    providers: [HeroService],
+  imports: [TypeOrmModule.forFeature([Hero, ItemMagico])],
+  providers: [HeroService],
+  controllers: [HeroController],
 })
-
-export class HeroModule{}
+export class HeroModule {}
