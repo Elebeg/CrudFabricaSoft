@@ -17,5 +17,5 @@ API construída com NestJS e TypeORM para gerenciamento de personagens e itens m
 
 1. **Clone o repositório**
 ```bash
-git clone https://github.com/seu-usuario/rpg-api.git
-cd rpg-api
+git clone https://github.com/Elebeg/CrudFabricaSoft.git
+cd CrudFabricaSoft
