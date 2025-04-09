@@ -19,3 +19,6 @@ API construída com NestJS e TypeORM para gerenciamento de personagens e itens m
 ```bash
 git clone https://github.com/Elebeg/CrudFabricaSoft.git
 cd CrudFabricaSoft
+docker compose up -d (certifique-se de nao ter o postgresql instalado)
+npm install (npm install pg --save se nao rodar o database)
+npm run start:dev
